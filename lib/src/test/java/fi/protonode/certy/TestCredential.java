@@ -75,7 +75,15 @@ public class TestCredential {
     }
 
     @Test
-    void testEcKeySize() throws Exception {
+    void testDefaultKeySizes() throws Exception {
+        Credential credEc = new Credential().subject("CN=joe");
+        expectKey(credEc.getX509Certificate(), "EC", 256);
+        Credential credRsa = new Credential().keyType(KeyType.RSA).subject("CN=joe");
+        expectKey(credRsa.getX509Certificate(), "RSA", 2048);
+    }
+
+    @Test
+    void testEcKeySizes() throws Exception {
         Credential cred = new Credential().subject("CN=joe")
                 .keyType(KeyType.EC)
                 .keySize(256);
@@ -87,7 +95,7 @@ public class TestCredential {
     }
 
     @Test
-    void testRsaKeySize() throws Exception {
+    void testRsaKeySizes() throws Exception {
         Credential cred = new Credential().subject("CN=joe")
                 .keyType(KeyType.RSA)
                 .keySize(1024);
@@ -96,25 +104,6 @@ public class TestCredential {
         expectKey(cred.getX509Certificate(), "RSA", 2048);
         cred.keySize(4096).generate();
         expectKey(cred.getX509Certificate(), "RSA", 4096);
-    }
-
-    void expectKey(X509Certificate cert, String expectedKeyType, int expectedSize) {
-        assertNotNull(cert);
-        switch (expectedKeyType) {
-            case "EC":
-                assertEquals("EC", cert.getPublicKey().getAlgorithm());
-                ECPublicKey ecKey = (ECPublicKey) cert.getPublicKey();
-                ECParameterSpec spec = ecKey.getParams();
-                assertEquals(expectedSize, spec.getOrder().bitLength());
-                break;
-            case "RSA":
-                assertEquals("RSA", cert.getPublicKey().getAlgorithm());
-                RSAPublicKey rsaKey = (RSAPublicKey) cert.getPublicKey();
-                assertEquals(expectedSize, rsaKey.getModulus().bitLength());
-                break;
-            default:
-                fail("invalid key type given to test case");
-        }
     }
 
     @Test
@@ -236,8 +225,8 @@ public class TestCredential {
     }
 
     @Test
-    void testEmptySubject() throws Exception {
-        // Empty subject is not allowed.
+    void testEmptySubjectAndSubjectAltNames() throws Exception {
+        // Both subject and subject alternative name cannot be empty.
         Credential cred = new Credential();
         assertThrows(IllegalArgumentException.class, () -> cred.getX509Certificate());
     }
@@ -248,6 +237,8 @@ public class TestCredential {
         assertThrows(IllegalArgumentException.class, () -> cred.subjectAltName("EMAIL:user@example.com"));
         assertThrows(IllegalArgumentException.class, () -> cred.subjectAltName("URL:"));
         assertThrows(IllegalArgumentException.class, () -> cred.subjectAltName("IP:999.999.999.999"));
+        assertThrows(IllegalArgumentException.class, () -> cred.subjectAltName("does-not-parse"));
+
     }
 
     @Test
@@ -285,6 +276,43 @@ public class TestCredential {
         expectPemPrivateKey(Files.newBufferedReader(keyPath), "EC");
     }
 
+    @Test
+    void testCreateInMemoryPkcs12KeyStore() throws Exception {
+        Credential ca = new Credential().subject("CN=ca");
+        Credential client = new Credential().subject("CN=client").issuer(ca);
+
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(null, null);
+        ks.setKeyEntry("client", client.getPrivateKey(), null, client.getCertificates());
+        ks.setCertificateEntry("ca", ca.getCertificate());
+        assertEquals(2, ks.size());
+        assertEquals(ca.getCertificate(), ks.getCertificate("ca"));
+        assertEquals(client.getCertificate(), ks.getCertificate("client"));
+    }
+
+    // Helper methods.
+
+    // Check expected key type and size.
+    void expectKey(X509Certificate cert, String expectedKeyType, int expectedSize) {
+        assertNotNull(cert);
+        switch (expectedKeyType) {
+            case "EC":
+                assertEquals("EC", cert.getPublicKey().getAlgorithm());
+                ECPublicKey ecKey = (ECPublicKey) cert.getPublicKey();
+                ECParameterSpec spec = ecKey.getParams();
+                assertEquals(expectedSize, spec.getOrder().bitLength());
+                break;
+            case "RSA":
+                assertEquals("RSA", cert.getPublicKey().getAlgorithm());
+                RSAPublicKey rsaKey = (RSAPublicKey) cert.getPublicKey();
+                assertEquals(expectedSize, rsaKey.getModulus().bitLength());
+                break;
+            default:
+                fail("invalid key type given to test case");
+        }
+    }
+
+    // Check if reader yields certificate in PEM format and it has given subject name.
     void expectPemCertificate(BufferedReader reader, String expectedDn) throws CertificateException, IOException {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
@@ -296,6 +324,7 @@ public class TestCredential {
         assertEquals(expectedDn, cert.getSubjectX500Principal().toString());
     }
 
+    // Check if reader yields private key in PEM format and it is of given type.
     void expectPemPrivateKey(BufferedReader reader, String expectedKeyType)
             throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         PEMParser parser = new PEMParser(reader);
@@ -303,20 +332,7 @@ public class TestCredential {
         parser.close();
         assertEquals("PRIVATE KEY", obj.getType());
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(obj.getContent());
+        // Will throw if key is not right type.
         KeyFactory.getInstance(expectedKeyType).generatePrivate(spec);
-    }
-
-    @Test
-    void createPkcs12KeyStore() throws Exception {
-        Credential ca = new Credential().subject("CN=ca");
-        Credential client = new Credential().subject("CN=client").issuer(ca);
-
-        KeyStore ks = KeyStore.getInstance("PKCS12");
-        ks.load(null, null);
-        ks.setKeyEntry("client", client.getPrivateKey(), null, client.getCertificates());
-        ks.setCertificateEntry("ca", ca.getCertificate());
-        assertEquals(2, ks.size());
-        assertEquals(ca.getCertificate(), ks.getCertificate("ca"));
-        assertEquals(client.getCertificate(), ks.getCertificate("client"));
     }
 }

@@ -4,29 +4,30 @@
 
 ## Description
 
-Certy gives you a simple Java API to create X509 certificates for your unit tests.
+Certy gives you a simple Java API for creating X509 certificates inside your unit tests.
 No more committing test certificates and keys into the repository!
 
-Certy is Java version of similar tool for command line and Golang use: [certyaml](https://github.com/tsaarni/certyaml).
+Certy is Java version of similar tool for command line and Golang: [certyaml](https://github.com/tsaarni/certyaml).
 
 ## Documentation
 
-You can read the latest documentation [here](https://tsaarni.github.io/certy/).
+Read the latest documentation [here](https://tsaarni.github.io/certy/).
 
 ## Example
 
 Two credentials are created: `ca` and `server`.
-The `ca` certificate will be created with defaults parameters: it will be self-signed certificate with 256 bits EC key type.
-The `server` certificate is set to be signed by the `ca` and its subject alternative name is set to `www.example.com`.
+The defaults work for most use cases so only minimal set of fields needs to be defined.
+For example `ca` certificate will be self-signed root CA certificate since issuer is not set.
+The `server` certificate is set to be signed by the `ca` and its subject alternative name is set to `app.127.0.0.1.nip.io` to allow its use as server certificate for given FQDN.
 
 ```java
 Credential ca = new Credential().subject("CN=ca");
 Credential server = new Credential().subject("CN=server")
                                     .issuer(ca)
-                                    .subjectAltName("DNS:www.example.com");
+                                    .subjectAltName("DNS:app.127.0.0.1.nip.io");
 ```
 
-Next, we can write CA certificate, server certificate and key to disk in PEM format:
+The `ca` certificate, `server` certificate and associated private key are written to the disk in PEM format:
 
 ```java
 ca.writeCertificateAsPem(Paths.get("ca.pem"));
@@ -34,11 +35,11 @@ server.writeCertificateAsPem(Paths.get("server.pem"))
       .writePrivateKeyAsPem(Paths.get("server-key.pem"));
 ```
 
-Or alternatively, we can create truststore and keystore in PKCS12 format:
+Or they can be stored in PKCS12 truststore and keystore:
 
 ```java
 KeyStore truststore = KeyStore.getInstance("PKCS12");
-truststore.load(null, null);
+truststore.load(null, null); // Required to initialize the keystore.
 truststore.setCertificateEntry("ca", ca.getCertificate());
 truststore.store(Files.newOutputStream(Paths.get("trusted.p12")), "secret".toCharArray());
 

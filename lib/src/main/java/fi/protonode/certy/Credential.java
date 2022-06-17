@@ -331,6 +331,7 @@ public class Credential {
                 effectiveNotAfter = Date.from(effectiveNotBefore.toInstant().plus(expires));
             }
 
+            // In theory subject could be empty but did not find a way to allow empty X500Name in Bouncy Castle.
             if (subject == null) {
                 throw new IllegalArgumentException("subject name must be set");
             }
@@ -365,6 +366,8 @@ public class Credential {
                             keyUsages.stream().collect(Collectors.summingInt(KeyUsage::getValue))));
 
             if (subjectAltNames != null) {
+                // If subject could be null, subjectAltName would be set critical.
+                // But did not find a way to set empty subject in Bouncy Castle, so subject == null is never true.
                 builder.addExtension(Extension.subjectAlternativeName, subject == null, subjectAltNames);
             }
 
