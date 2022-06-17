@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"fi.protonode.certy"}]
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"fi.protonode.certy"}];updateSearchResults();
