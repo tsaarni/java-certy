@@ -144,7 +144,7 @@ public class Credential {
     }
 
     /**
-     * Defines the distinguished name for the certificate.<p>
+     * Defines the distinguished name for the certificate (mandatory).<p>
      * Example: {@code "CN=Joe"}.
      *
      * @param val Subject name.
@@ -209,9 +209,9 @@ public class Credential {
     }
 
     /**
-     * Sets certificate's {@code NotAfter} field by given duration from the current time.
+     * Defines {@link #notAfter} by duration from current time.
      * {@link #notAfter} takes precedence over expires.
-     * The default value is 1 year if not defined
+     * The default value is 1 year if {@code expires} is not set.
      *
      * @param val Time until expiration.
      * @return The Credential itself.
@@ -222,10 +222,10 @@ public class Credential {
     }
 
     /**
-     * Defines certificate not to be valid before this time.
-     * The default value is current time if not defined.
+     * Defines certificate not to be valid before given time.
+     * The default value is current time if {@code notBefore} is not set.
      *
-     * @param val Date when certificate becomes valid.
+     * @param val Time when certificate becomes valid.
      * @return The Credential itself.
      */
     public Credential notBefore(Date val) {
@@ -234,10 +234,10 @@ public class Credential {
     }
 
     /**
-     * Defines certificate not to be valid after this time.
-     * Default value is current time + expires if {@code notAfter} is not defined.
+     * Defines certificate not to be valid after given time.
+     * Default value is current time + expires if {@code notAfter} is not set.
      *
-     * @param val Date when certificate expires.
+     * @param val Time when certificate expires.
      * @return The Credential itself.
      */
     public Credential notAfter(Date val) {
@@ -248,7 +248,7 @@ public class Credential {
     /**
      * Defines a sequence of values for x509 key usage extension.<p>
      *
-     * If {@code keyUsage} is undefined following defaults are used:<p>
+     * Following defaults are used if {@code keyUsages} is not set:<p>
      * CertSign and CRLSign are set for CA certificates.
      * KeyEncipherment and DigitalSignature are set for end-entity certificates with RSA key.
      * KeyEncipherment, DigitalSignature and KeyAgreement are set for end-entity certificates with EC key.
@@ -262,8 +262,7 @@ public class Credential {
     }
 
     /**
-     * Defines a sequence of x509 extended key usages.
-     * Not defined by default.
+     * Defines an optional list of x509 extended key usages.
      *
      * @param val List of extended key usages.
      * @return The Credential itself.
@@ -286,10 +285,11 @@ public class Credential {
     }
 
     /**
-     * Defines certificate's basic constraints isCA attribute.
-     * If IsCA is not defined, self-signed certificates are set as CA certificates, everything else is not set.
+     * Defines basic constraints CA attribute.
+     * Self-signed certificates are automatically set {@code CA:true} unless {@code isCa} is explicitly set.
+     * Otherwise {@code CA:false}.
      *
-     * @param val Value for isCA attribute of basic constraints.
+     * @param val Value for CA attribute of basic constraints.
      * @return The Credential itself.
      */
     public Credential isCa(Boolean val) {
@@ -298,7 +298,7 @@ public class Credential {
     }
 
     /**
-     * (Re)generate certificate and private key with currently defined attributes.
+     * (Re)generate certificate and private key with currently set values.
      *
      * @return The Credential itself.
      */
@@ -331,6 +331,7 @@ public class Credential {
                 effectiveNotAfter = Date.from(effectiveNotBefore.toInstant().plus(expires));
             }
 
+            // In theory subject could be empty but did not find a way to allow empty X500Name in Bouncy Castle.
             if (subject == null) {
                 throw new IllegalArgumentException("subject name must be set");
             }
@@ -365,6 +366,8 @@ public class Credential {
                             keyUsages.stream().collect(Collectors.summingInt(KeyUsage::getValue))));
 
             if (subjectAltNames != null) {
+                // If subject could be null, subjectAltName would be set critical.
+                // But did not find a way to set empty subject in Bouncy Castle, so subject == null is never true.
                 builder.addExtension(Extension.subjectAlternativeName, subject == null, subjectAltNames);
             }
 
@@ -383,7 +386,7 @@ public class Credential {
     }
 
     /**
-     * Returns PEM block containing the X509 certificate.
+     * Returns PEM block containing X509 certificate.
      *
      * @return String containing the certificate.
      */
@@ -400,7 +403,7 @@ public class Credential {
     }
 
     /**
-     * Returns PEM block containing the private key in PKCS8 format.
+     * Returns PEM block containing private key in PKCS8 format.
      *
      * @return String containing the private key.
      */
@@ -418,7 +421,7 @@ public class Credential {
     }
 
     /**
-     * Writes X509 certificate to a file as PEM.
+     * Writes X509 certificate to a file as PEM block.
      *
      * @param out Path to write the PEM file to.
      * @return The Credential itself.
@@ -438,7 +441,7 @@ public class Credential {
     }
 
     /**
-     * Writes private key in PKCS8 format to a file as PEM.
+     * Writes private key in PKCS8 format to a file as PEM block.
      *
      * @param out Path to write the PEM file to.
      * @return The Credential itself.
@@ -468,10 +471,10 @@ public class Credential {
     }
 
     /**
-     * Returns certificate as an array.
+     * Returns certificate.
      * This is convenience method for use cases where array is required.
      *
-     * @return Array of certificates. Holds always just single certificate.
+     * @return Array of certificates. Always holds just single certificate.
      */
     public Certificate[] getCertificates()
             throws CertificateException, NoSuchAlgorithmException {
@@ -483,7 +486,7 @@ public class Credential {
     /**
      * Returns certificate.
      *
-     * @return Certificate in {@code X509Certificate} format.
+     * @return Certificate as {@code X509Certificate}.
      */
     public X509Certificate getX509Certificate() throws CertificateException, NoSuchAlgorithmException {
         ensureGenerated();
