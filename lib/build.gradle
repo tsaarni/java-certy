@@ -38,3 +38,8 @@ test {
         exceptionFormat = 'full'
     }
 }
+
+task generateJavadoc(type: Javadoc) {
+  source = sourceSets.main.allJava
+  classpath = project.sourceSets.main.compileClasspath
+}

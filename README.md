@@ -9,6 +9,10 @@ No more committing test certificates and keys into the repository!
 
 Certy is Java version of similar tool for command line and Golang use: [certyaml](https://github.com/tsaarni/certyaml).
 
+## Documentation
+
+You can read the latest documentation [here](https://tsaarni.github.io/certy/).
+
 ## Example
 
 Two credentials are created: `ca` and `server`.

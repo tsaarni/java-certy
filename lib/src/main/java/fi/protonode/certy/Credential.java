@@ -61,15 +61,19 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
+/**
+ * Credential is a builder class for generating certificates and PKI hierarchies programmatically.
+ * It is intended to be used in unit tests to create test certificates on-demand, to make it unnecessary to commit them into git repo as test data.
+ */
 public class Credential {
 
-    /** Key type values fo {@link #keyType()}. */
+    /** Key type values for {@link #keyType}. */
     public enum KeyType {
         EC,
         RSA
     }
 
-    /** Key usage values for {@link #keyUsages()}. */
+    /** Key usage values for {@link #keyUsages}. */
     public enum KeyUsage {
         DIGITAL_SIGNATURE(org.bouncycastle.asn1.x509.KeyUsage.digitalSignature),
         NON_REPUDIATION(org.bouncycastle.asn1.x509.KeyUsage.nonRepudiation),
@@ -92,7 +96,7 @@ public class Credential {
         }
     }
 
-    /** Extended key usage values for {@link #extKeyUsages()}. */
+    /** Extended key usage values for {@link #extKeyUsages}. */
     public enum ExtKeyUsage {
         ANY(KeyPurposeId.anyExtendedKeyUsage),
         SERVER_AUTH(KeyPurposeId.id_kp_serverAuth),
@@ -130,6 +134,9 @@ public class Credential {
     private KeyPair keyPair;
     private Certificate certificate;
 
+    /**
+     * Creates new credential builder.
+     */
     public Credential() {
         keyUsages = new ArrayList<>();
         extKeyUsages = new ArrayList<>();
@@ -141,6 +148,7 @@ public class Credential {
      * Example: {@code "CN=Joe"}.
      *
      * @param val Subject name.
+     * @return The Credential itself.
      */
     public Credential subject(String val) {
         this.subject = new X500Name(val);
@@ -149,10 +157,11 @@ public class Credential {
 
     /**
      * Defines an optional list of values for x509 Subject Alternative Name extension.<p>
-     * Examples: {@code "DNS:www.example.com"</code>},
+     * Examples: {@code "DNS:www.example.com"},
      *           {@code "IP:1.2.3.4"},
      *           {@code "URI:https://www.example.com"}.
-     * @param val List of subject alternative names.<p>
+     * @param val List of subject alternative names.
+     * @return The Credential itself.
      */
     public Credential subjectAltNames(List<String> val) {
         this.subjectAltNames = asGeneralNames(val);
@@ -161,11 +170,12 @@ public class Credential {
 
     /**
      * Defines an optional value for x509 Subject Alternative Name extension.<p>
-     * Examples: {@code "DNS:www.example.com"</code>},
+     * Examples: {@code "DNS:www.example.com"},
      *           {@code "IP:1.2.3.4"},
      *           {@code "URI:https://www.example.com"}.
      *
      * @param val Subject alternative name.
+     * @return The Credential itself.
      */
     public Credential subjectAltName(String val) {
         this.subjectAltNames = asGeneralNames(Arrays.asList(val));
@@ -177,6 +187,7 @@ public class Credential {
      * Defaults to {@code KeyType.EC} if not set.
      *
      * @param val Key type.
+     * @return The Credential itself.
      */
     public Credential keyType(KeyType val) {
         this.keyType = val;
@@ -190,6 +201,7 @@ public class Credential {
      *           For keyType RSA: 1024, 2048, 4096.
      *
      * @param val Key size.
+     * @return The Credential itself.
      */
     public Credential keySize(int val) {
         this.keySize = val;
@@ -197,11 +209,12 @@ public class Credential {
     }
 
     /**
-     * Automatically defines certificate's NotAfter field by adding duration defined in Expires to the current time.
-     * {@link #notAfter()} takes precedence over expires.
+     * Sets certificate's {@code NotAfter} field by given duration from the current time.
+     * {@link #notAfter} takes precedence over expires.
      * The default value is 1 year if not defined
      *
      * @param val Time until expiration.
+     * @return The Credential itself.
      */
     public Credential expires(Duration val) {
         this.expires = val;
@@ -213,6 +226,7 @@ public class Credential {
      * The default value is current time if not defined.
      *
      * @param val Date when certificate becomes valid.
+     * @return The Credential itself.
      */
     public Credential notBefore(Date val) {
         this.notBefore = val;
@@ -224,6 +238,7 @@ public class Credential {
      * Default value is current time + expires if {@code notAfter} is not defined.
      *
      * @param val Date when certificate expires.
+     * @return The Credential itself.
      */
     public Credential notAfter(Date val) {
         this.notAfter = val;
@@ -239,6 +254,7 @@ public class Credential {
      * KeyEncipherment, DigitalSignature and KeyAgreement are set for end-entity certificates with EC key.
      *
      * @param val List of key usages.
+     * @return The Credential itself.
      */
     public Credential keyUsages(List<KeyUsage> val) {
         this.keyUsages = val;
@@ -250,6 +266,7 @@ public class Credential {
      * Not defined by default.
      *
      * @param val List of extended key usages.
+     * @return The Credential itself.
      */
     public Credential extKeyUsages(List<ExtKeyUsage> val) {
         this.extKeyUsages = val;
@@ -261,6 +278,7 @@ public class Credential {
      * Self-signed certificate is generated if issuer is not defined.
      *
      * @param val Instance of {@code Credential} that will be used to sign this certificate.
+     * @return The Credential itself.
      */
     public Credential issuer(Credential val) {
         this.issuer = val;
@@ -272,6 +290,7 @@ public class Credential {
      * If IsCA is not defined, self-signed certificates are set as CA certificates, everything else is not set.
      *
      * @param val Value for isCA attribute of basic constraints.
+     * @return The Credential itself.
      */
     public Credential isCa(Boolean val) {
         this.isCa = val;
@@ -280,41 +299,45 @@ public class Credential {
 
     /**
      * (Re)generate certificate and private key with currently defined attributes.
+     *
+     * @return The Credential itself.
      */
     public Credential generate()
-            throws CertificateException, NoSuchAlgorithmException, CertIOException {
-        // Traverse the certificate hierarchy recursively to ensure issuing CAs have
-        // been generated as well.
-        if (issuer != null) {
-            issuer.ensureGenerated();
-        }
+            throws CertificateException, NoSuchAlgorithmException {
 
-        setDefaults();
-
-        keyPair = newKeyPair(keyType, keySize);
-
-        // Calculate the validity dates according to given values and current time.
-        Date effectiveNotBefore;
-        Date effectiveNotAfter;
-        if (notBefore != null) {
-            effectiveNotBefore = notBefore;
-        } else {
-            effectiveNotBefore = new Date(); // Now.
-        }
-
-        if (notAfter != null) {
-            effectiveNotAfter = notAfter;
-        } else {
-            effectiveNotAfter = Date.from(effectiveNotBefore.toInstant().plus(expires));
-        }
-
-        if (subject == null) {
-            throw new IllegalArgumentException("subject name must be set");
-        }
-
-        X500Name effectiveIssuer;
-        ContentSigner signer;
         try {
+            // Traverse the certificate hierarchy recursively to ensure issuing CAs have
+            // been generated as well.
+            if (issuer != null) {
+                issuer.ensureGenerated();
+            }
+
+            setDefaults();
+
+            keyPair = newKeyPair(keyType, keySize);
+
+            // Calculate the validity dates according to given values and current time.
+            Date effectiveNotBefore;
+            Date effectiveNotAfter;
+            if (notBefore != null) {
+                effectiveNotBefore = notBefore;
+            } else {
+                effectiveNotBefore = new Date(); // Now.
+            }
+
+            if (notAfter != null) {
+                effectiveNotAfter = notAfter;
+            } else {
+                effectiveNotAfter = Date.from(effectiveNotBefore.toInstant().plus(expires));
+            }
+
+            if (subject == null) {
+                throw new IllegalArgumentException("subject name must be set");
+            }
+
+            X500Name effectiveIssuer;
+            ContentSigner signer;
+
             if (issuer == null) {
                 effectiveIssuer = subject;
                     signer = new JcaContentSignerBuilder(signatureAlgorithm(keyPair.getPublic()))
@@ -324,37 +347,37 @@ public class Credential {
                 signer = new JcaContentSignerBuilder(signatureAlgorithm(issuer.keyPair.getPublic()))
                         .build(issuer.keyPair.getPrivate());
             }
-        } catch (OperatorCreationException e) {
+
+            Instant now = Instant.now();
+            JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
+                    effectiveIssuer,
+                    BigInteger.valueOf(now.toEpochMilli()), // Current time as serial number.
+                    effectiveNotBefore,
+                    effectiveNotAfter,
+                    subject,
+                    keyPair.getPublic());
+
+            JcaX509ExtensionUtils utils = new JcaX509ExtensionUtils();
+            builder.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCa))
+                    .addExtension(Extension.subjectKeyIdentifier, false,
+                            utils.createSubjectKeyIdentifier(keyPair.getPublic()))
+                    .addExtension(Extension.keyUsage, true, new org.bouncycastle.asn1.x509.KeyUsage(
+                            keyUsages.stream().collect(Collectors.summingInt(KeyUsage::getValue))));
+
+            if (subjectAltNames != null) {
+                builder.addExtension(Extension.subjectAlternativeName, subject == null, subjectAltNames);
+            }
+
+            if (!extKeyUsages.isEmpty()) {
+                builder.addExtension(Extension.extendedKeyUsage, false, new ExtendedKeyUsage(
+                        extKeyUsages.stream().map(ExtKeyUsage::getValue).toArray(KeyPurposeId[]::new)));
+            }
+
+            certificate = new JcaX509CertificateConverter().setProvider(new BouncyCastleProvider())
+                    .getCertificate(builder.build(signer));
+        } catch (CertIOException | OperatorCreationException e) {
             throw new CertificateException(e.toString());
         }
-
-        Instant now = Instant.now();
-        JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
-                effectiveIssuer,
-                BigInteger.valueOf(now.toEpochMilli()), // Current time as serial number.
-                effectiveNotBefore,
-                effectiveNotAfter,
-                subject,
-                keyPair.getPublic());
-
-        JcaX509ExtensionUtils utils = new JcaX509ExtensionUtils();
-        builder.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCa))
-                .addExtension(Extension.subjectKeyIdentifier, false,
-                        utils.createSubjectKeyIdentifier(keyPair.getPublic()))
-                .addExtension(Extension.keyUsage, true, new org.bouncycastle.asn1.x509.KeyUsage(
-                        keyUsages.stream().collect(Collectors.summingInt(KeyUsage::getValue))));
-
-        if (subjectAltNames != null) {
-            builder.addExtension(Extension.subjectAlternativeName, subject == null, subjectAltNames);
-        }
-
-        if (!extKeyUsages.isEmpty()) {
-            builder.addExtension(Extension.extendedKeyUsage, false, new ExtendedKeyUsage(
-                    extKeyUsages.stream().map(ExtKeyUsage::getValue).toArray(KeyPurposeId[]::new)));
-        }
-
-        certificate = new JcaX509CertificateConverter().setProvider(new BouncyCastleProvider())
-                .getCertificate(builder.build(signer));
 
         return this;
     }
@@ -397,7 +420,8 @@ public class Credential {
     /**
      * Writes X509 certificate to a file as PEM.
      *
-     * @param Path to write the PEM file to.
+     * @param out Path to write the PEM file to.
+     * @return The Credential itself.
      */
     public Credential writeCertificateAsPem(Path out)
             throws IOException, CertificateException, NoSuchAlgorithmException {
@@ -416,7 +440,8 @@ public class Credential {
     /**
      * Writes private key in PKCS8 format to a file as PEM.
      *
-     * @param Path to write the PEM file to.
+     * @param out Path to write the PEM file to.
+     * @return The Credential itself.
      */
     public Credential writePrivateKeyAsPem(Path out) throws IOException, CertificateException, NoSuchAlgorithmException {
         ensureGenerated();
@@ -433,8 +458,10 @@ public class Credential {
 
     /**
      * Returns certificate.
+     *
+     * @return Certificate.
      */
-    public Certificate getCertificate() throws CertificateException, NoSuchAlgorithmException, CertIOException {
+    public Certificate getCertificate() throws CertificateException, NoSuchAlgorithmException {
         ensureGenerated();
 
         return certificate;
@@ -447,7 +474,7 @@ public class Credential {
      * @return Array of certificates. Holds always just single certificate.
      */
     public Certificate[] getCertificates()
-            throws CertificateException, NoSuchAlgorithmException, CertIOException {
+            throws CertificateException, NoSuchAlgorithmException {
         ensureGenerated();
 
         return new Certificate[] { certificate };
@@ -455,9 +482,10 @@ public class Credential {
 
     /**
      * Returns certificate.
-     * This is convenience for returning certificate as {@code X509Certificate}.
+     *
+     * @return Certificate in {@code X509Certificate} format.
      */
-    public X509Certificate getX509Certificate() throws CertificateException, NoSuchAlgorithmException, CertIOException {
+    public X509Certificate getX509Certificate() throws CertificateException, NoSuchAlgorithmException {
         ensureGenerated();
 
         return (X509Certificate) certificate;
@@ -465,8 +493,10 @@ public class Credential {
 
     /**
      * Returns private key.
+     *
+     * @return Private key.
      */
-    public PrivateKey getPrivateKey() throws CertificateException, NoSuchAlgorithmException, CertIOException {
+    public PrivateKey getPrivateKey() throws CertificateException, NoSuchAlgorithmException {
         ensureGenerated();
 
         return keyPair.getPrivate();
@@ -475,7 +505,7 @@ public class Credential {
 
     // Generates certificate and key pair unless they have been already generated.
     private void ensureGenerated()
-            throws CertificateException, NoSuchAlgorithmException, CertIOException {
+            throws CertificateException, NoSuchAlgorithmException {
         if (certificate == null || keyPair == null) {
             generate();
         }
