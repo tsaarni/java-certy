@@ -102,11 +102,11 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="fi/protonode/certy/Credential.html#expires(java.time.Duration)" class="member-name-link">expires(Duration)</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Sets certificate's <code>NotAfter</code> field by given duration from the current time.</div>
+<div class="block">Defines <code>Credential.notAfter</code> by duration from current time.</div>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.html#extKeyUsages(java.util.List)" class="member-name-link">extKeyUsages(List&lt;Credential.ExtKeyUsage&gt;)</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Defines a sequence of x509 extended key usages.</div>
+<div class="block">Defines an optional list of x509 extended key usages.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:F">F</h2>
@@ -118,7 +118,7 @@ loadScripts(document, 'script');</script>
 <dl class="index">
 <dt><a href="fi/protonode/certy/Credential.html#generate()" class="member-name-link">generate()</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">(Re)generate certificate and private key with currently defined attributes.</div>
+<div class="block">(Re)generate certificate and private key with currently set values.</div>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.html#getCertificate()" class="member-name-link">getCertificate()</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
@@ -126,11 +126,11 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.html#getCertificateAsPem()" class="member-name-link">getCertificateAsPem()</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Returns PEM block containing the X509 certificate.</div>
+<div class="block">Returns PEM block containing X509 certificate.</div>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.html#getCertificates()" class="member-name-link">getCertificates()</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Returns certificate as an array.</div>
+<div class="block">Returns certificate.</div>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.html#getPrivateKey()" class="member-name-link">getPrivateKey()</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
@@ -138,7 +138,7 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.html#getPrivateKeyAsPem()" class="member-name-link">getPrivateKeyAsPem()</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Returns PEM block containing the private key in PKCS8 format.</div>
+<div class="block">Returns PEM block containing private key in PKCS8 format.</div>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.ExtKeyUsage.html#getValue()" class="member-name-link">getValue()</a> - Method in enum class fi.protonode.certy.<a href="fi/protonode/certy/Credential.ExtKeyUsage.html" title="enum class in fi.protonode.certy">Credential.ExtKeyUsage</a></dt>
 <dd>&nbsp;</dd>
@@ -153,7 +153,7 @@ loadScripts(document, 'script');</script>
 <dl class="index">
 <dt><a href="fi/protonode/certy/Credential.html#isCa(java.lang.Boolean)" class="member-name-link">isCa(Boolean)</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Defines certificate's basic constraints isCA attribute.</div>
+<div class="block">Defines basic constraints isCA attribute.</div>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.html#issuer(fi.protonode.certy.Credential)" class="member-name-link">issuer(Credential)</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
@@ -187,11 +187,11 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="fi/protonode/certy/Credential.html#notAfter(java.util.Date)" class="member-name-link">notAfter(Date)</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Defines certificate not to be valid after this time.</div>
+<div class="block">Defines certificate not to be valid after given time.</div>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.html#notBefore(java.util.Date)" class="member-name-link">notBefore(Date)</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Defines certificate not to be valid before this time.</div>
+<div class="block">Defines certificate not to be valid before given time.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:O">O</h2>
@@ -210,7 +210,7 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="fi/protonode/certy/Credential.html#subject(java.lang.String)" class="member-name-link">subject(String)</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Defines the distinguished name for the certificate.</div>
+<div class="block">Defines the distinguished name for the certificate (mandatory).</div>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.html#subjectAltName(java.lang.String)" class="member-name-link">subjectAltName(String)</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
@@ -260,11 +260,11 @@ the order they are declared.</div>
 <dl class="index">
 <dt><a href="fi/protonode/certy/Credential.html#writeCertificateAsPem(java.nio.file.Path)" class="member-name-link">writeCertificateAsPem(Path)</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Writes X509 certificate to a file as PEM.</div>
+<div class="block">Writes X509 certificate to a file as PEM block.</div>
 </dd>
 <dt><a href="fi/protonode/certy/Credential.html#writePrivateKeyAsPem(java.nio.file.Path)" class="member-name-link">writePrivateKeyAsPem(Path)</a> - Method in class fi.protonode.certy.<a href="fi/protonode/certy/Credential.html" title="class in fi.protonode.certy">Credential</a></dt>
 <dd>
-<div class="block">Writes private key in PKCS8 format to a file as PEM.</div>
+<div class="block">Writes private key in PKCS8 format to a file as PEM block.</div>
 </dd>
 </dl>
 <a href="#I:A">A</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:F">F</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:K">K</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:V">V</a>&nbsp;<a href="#I:W">W</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a></main>
