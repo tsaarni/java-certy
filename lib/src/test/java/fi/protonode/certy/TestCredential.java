@@ -32,6 +32,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyFactory;
@@ -305,6 +306,20 @@ public class TestCredential {
         assertEquals("CN=end-entity", endEntity.getX509Certificate().getSubjectX500Principal().toString());
         assertEquals("CN=sub-ca", endEntity.getX509Certificate().getIssuerX500Principal().toString());
         assertEquals(-1, endEntity.getX509Certificate().getBasicConstraints()); // CA:false
+    }
+
+    @Test
+    void testSerialNumber() throws Exception {
+        BigInteger serial = BigInteger.valueOf(1234);
+        X509Certificate cert = new Credential().subject("CN=joe").serial(serial).getX509Certificate();
+        assertEquals(serial, cert.getSerialNumber());
+
+        // Serial number should have unique value, even if not set explicitly.
+        X509Certificate certNoExplicitSerial1 = new Credential().subject("CN=joe").getX509Certificate();
+        X509Certificate certNoExplicitSerial2 = new Credential().subject("CN=jen").getX509Certificate();
+        assertNotEquals(BigInteger.valueOf(0), certNoExplicitSerial1.getSerialNumber());
+        assertNotEquals(BigInteger.valueOf(0), certNoExplicitSerial2.getSerialNumber());
+        assertNotEquals(certNoExplicitSerial1.getSerialNumber(), certNoExplicitSerial2.getSerialNumber());
     }
 
 

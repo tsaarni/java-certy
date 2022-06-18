@@ -4,8 +4,8 @@
 
 ## Description
 
-Certy gives you a simple Java API for creating X509 certificates inside your unit tests.
-No more committing test certificates and keys into the repository!
+Certy is a simple to use Java API for creating X509 certificates on demand in unit tests.
+No more committing test certificates and keys in the repository!
 
 Certy is Java version of similar tool for command line and Golang: [certyaml](https://github.com/tsaarni/certyaml).
 

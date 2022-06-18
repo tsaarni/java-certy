@@ -129,6 +129,7 @@ public class Credential {
     private List<ExtKeyUsage> extKeyUsages;
     private Credential issuer;
     private Boolean isCa;
+    private BigInteger serial;
 
     // Generated attributes.
     private KeyPair keyPair;
@@ -298,6 +299,18 @@ public class Credential {
     }
 
     /**
+     * Defines serial number.
+     * Default value is current time in milliseconds.
+     *
+     * @param val Value for serial number.
+     * @return The Credential itself.
+     */
+    public Credential serial(BigInteger val) {
+        this.serial = val;
+        return this;
+    }
+
+    /**
      * (Re)generate certificate and private key with currently set values.
      *
      * @return The Credential itself.
@@ -349,10 +362,9 @@ public class Credential {
                         .build(issuer.keyPair.getPrivate());
             }
 
-            Instant now = Instant.now();
             JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
                     effectiveIssuer,
-                    BigInteger.valueOf(now.toEpochMilli()), // Current time as serial number.
+                    serial,
                     effectiveNotBefore,
                     effectiveNotAfter,
                     subject,
@@ -542,10 +554,15 @@ public class Credential {
                 keyUsages = Arrays.asList(KeyUsage.KEY_CERT_SIGN, KeyUsage.CRL_SIGN);
             } else if (keyType == KeyType.EC) {
                 // https://github.com/openjdk/jdk/blob/0530f4e517be5d5b3ff10be8a0764e564f068c06/src/java.base/share/classes/sun/security/ssl/X509KeyManagerImpl.java#L604-L618
-                keyUsages = Arrays.asList(KeyUsage.KEY_ENCIPHERMENT, KeyUsage.DIGITAL_SIGNATURE, KeyUsage.KEY_AGREEMENT);
+                keyUsages = Arrays.asList(KeyUsage.KEY_ENCIPHERMENT, KeyUsage.DIGITAL_SIGNATURE,
+                        KeyUsage.KEY_AGREEMENT);
             } else {
                 keyUsages = Arrays.asList(KeyUsage.KEY_ENCIPHERMENT, KeyUsage.DIGITAL_SIGNATURE);
             }
+        }
+
+        if (serial == null) {
+           serial = BigInteger.valueOf(Instant.now().toEpochMilli()); // Current time in milliseconds.
         }
     }
 
