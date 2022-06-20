@@ -1,6 +1,6 @@
 # Certy
 
-![](https://github.com/tsaarni/certy/workflows/unit-tests/badge.svg)
+![](https://github.com/tsaarni/java-certy/workflows/unit-tests/badge.svg)
 
 ## Description
 
@@ -11,7 +11,7 @@ Certy is Java version of similar tool for command line and Golang: [certyaml](ht
 
 ## Documentation
 
-Read the latest documentation [here](https://tsaarni.github.io/certy/).
+Read the latest documentation [here](https://tsaarni.github.io/java-certy/).
 
 ## Example
 
@@ -20,7 +20,7 @@ Only minimal set of fields needs to be defined since defaults work for most use 
 For example `ca` certificate will be self-signed root CA since issuer is not set.
 The `server` certificate is set to be signed by `ca` and its subject alternative name is set to `app.127.0.0.1.nip.io` to allow its use as server certificate for given domain.
 Key usage for end-entity certificates defaults to allow their use as both server and client certificates.
-When the defaults are not correct for particular use, they can be overwritten by calling the [builder methods](https://tsaarni.github.io/certy/fi/protonode/certy/Credential.html#method-summary).
+When the defaults are not correct for particular use, they can be overwritten by calling the [builder methods](https://tsaarni.github.io/java-certy/fi/protonode/certy/Credential.html#method-summary).
 
 ```java
 Credential ca = new Credential().subject("CN=ca");

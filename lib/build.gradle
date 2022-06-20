@@ -42,7 +42,7 @@ publishing {
             pom {
                 name = 'certy'
                 description = 'Java library for generating certificates for tests.'
-                url = 'https://github.com/tsaarni/certy'
+                url = 'https://github.com/tsaarni/java-certy'
                 developers {
                     developer {
                         id = 'tsaarni'
@@ -52,9 +52,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection = 'scm:git:git://github.com:tsaarni/certy.git'
-                    developerConnection = 'scm:git:ssh://github.com:tsaarni/certy.git'
-                    url = 'https://github.com/tsaarni/certy'
+                    connection = 'scm:git:git://github.com:tsaarni/java-certy.git'
+                    developerConnection = 'scm:git:ssh://github.com:tsaarni/java-certy.git'
+                    url = 'https://github.com/tsaarni/java-certy'
                 }
                 licenses {
                     license {
