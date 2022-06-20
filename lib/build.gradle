@@ -27,6 +27,10 @@ java {
     withSourcesJar()
 }
 
+compileJava {
+    options.release = 8
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
