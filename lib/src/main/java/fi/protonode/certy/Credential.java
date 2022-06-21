@@ -287,13 +287,12 @@ public class Credential {
 
     /**
      * Defines basic constraints CA attribute.
-     * Self-signed certificates are automatically set {@code CA:true} unless {@code isCa} is explicitly set.
-     * Otherwise {@code CA:false}.
+     * Self-signed certificates are automatically set {@code CA:true}, others default to {@code CA:false}.
      *
      * @param val Value for CA attribute of basic constraints.
      * @return The Credential itself.
      */
-    public Credential isCa(Boolean val) {
+    public Credential ca(Boolean val) {
         this.isCa = val;
         return this;
     }

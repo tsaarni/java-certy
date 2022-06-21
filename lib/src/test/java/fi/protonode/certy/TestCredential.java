@@ -184,13 +184,13 @@ public class TestCredential {
     }
 
     @Test
-    void testIsCa() throws Exception {
+    void testCa() throws Exception {
         Credential issuer = new Credential().subject("CN=joe");
         assertArrayEquals(new boolean[] { false, false, false, false, false, true, true, false, false },
                 issuer.getX509Certificate().getKeyUsage());
         assertEquals(Integer.MAX_VALUE, issuer.getX509Certificate().getBasicConstraints()); // CA:true
 
-        issuer.isCa(true).generate();
+        issuer.ca(true).generate();
         assertArrayEquals(new boolean[] { false, false, false, false, false, true, true, false, false },
                 issuer.getX509Certificate().getKeyUsage());
         assertEquals(Integer.MAX_VALUE, issuer.getX509Certificate().getBasicConstraints()); // CA:true
@@ -297,7 +297,7 @@ public class TestCredential {
         assertEquals("CN=ca", ca.getX509Certificate().getIssuerX500Principal().toString());
         assertEquals(Integer.MAX_VALUE, ca.getX509Certificate().getBasicConstraints()); // CA:true
 
-        Credential subCa = new Credential().subject("CN=sub-ca").issuer(ca).isCa(true);
+        Credential subCa = new Credential().subject("CN=sub-ca").issuer(ca).ca(true);
         assertEquals("CN=sub-ca", subCa.getX509Certificate().getSubjectX500Principal().toString());
         assertEquals("CN=ca", subCa.getX509Certificate().getIssuerX500Principal().toString());
         assertEquals(Integer.MAX_VALUE, subCa.getX509Certificate().getBasicConstraints()); // CA:true
