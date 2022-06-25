@@ -27,6 +27,7 @@ java {
     withSourcesJar()
 }
 
+// Compatibility with JDK8.
 compileJava {
     options.release = 8
 }
