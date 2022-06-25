@@ -398,8 +398,9 @@ public class Credential {
 
     /**
      * Returns PEM block containing X509 certificate.
+     * To get PEM bundle including certificate chain see {@link #getCertificatesAsPem}.
      *
-     * @return String containing the certificate.
+     * @return String containing the certificate as PEM.
      */
     public String getCertificateAsPem() throws CertificateException, NoSuchAlgorithmException, IOException {
         ensureGenerated();
@@ -407,6 +408,27 @@ public class Credential {
         StringWriter writer = new StringWriter();
         JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
         pemWriter.writeObject(certificate);
+        pemWriter.flush();
+        pemWriter.close();
+
+        return writer.toString();
+    }
+
+    /**
+     * Returns PEM bundle containing X509 certificate and its chain.
+     * If the credential is end-entity (CA:false) then also chain certificates
+     * up to (but not including) root CA are returned in the bundle.
+     *
+     * @return String containing PEM bundle.
+     */
+    public String getCertificatesAsPem() throws CertificateException, NoSuchAlgorithmException, IOException {
+        ensureGenerated();
+
+        StringWriter writer = new StringWriter();
+        JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
+        for (Certificate c : getChain()) {
+            pemWriter.writeObject(c);
+        }
         pemWriter.flush();
         pemWriter.close();
 
@@ -433,6 +455,7 @@ public class Credential {
 
     /**
      * Writes X509 certificate to a file as PEM block.
+     * To write PEM bundle including certificate chain see {@link #writeCertificatesAsPem}.
      *
      * @param out Path to write the PEM file to.
      * @return The Credential itself.
@@ -444,6 +467,30 @@ public class Credential {
         try (BufferedWriter writer = Files.newBufferedWriter(out, StandardCharsets.UTF_8)) {
             JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
             pemWriter.writeObject(certificate);
+            pemWriter.flush();
+            pemWriter.close();
+        }
+
+        return this;
+    }
+
+    /**
+     * Writes PEM bundle containing X509 certificate and its chain.
+     * If the credential is end-entity (CA:false) then also chain certificates
+     * up to (but not including) root CA are written in the bundle.
+     *
+     * @param out Path to write the PEM file to.
+     * @return The Credential itself.
+     */
+    public Credential writeCertificatesAsPem(Path out)
+            throws IOException, CertificateException, NoSuchAlgorithmException {
+        ensureGenerated();
+
+        try (BufferedWriter writer = Files.newBufferedWriter(out, StandardCharsets.UTF_8)) {
+            JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
+            for (Certificate c : getChain()) {
+                pemWriter.writeObject(c);
+            }
             pemWriter.flush();
             pemWriter.close();
         }
@@ -472,6 +519,7 @@ public class Credential {
 
     /**
      * Returns certificate.
+     * To get certificate including certificate chain see {@link #getCertificates}
      *
      * @return Certificate.
      */
@@ -482,8 +530,8 @@ public class Credential {
     }
 
     /**
-     * Returns certificate.
-     * This is convenience method for use cases where array is required.
+     * Returns certificate(s).
+     * If the credential is end-entity (CA:false) then also chain certificates up to (but not including) root CA are returned.
      *
      * @return Array of certificates. Always holds just single certificate.
      */
@@ -491,7 +539,7 @@ public class Credential {
             throws CertificateException, NoSuchAlgorithmException {
         ensureGenerated();
 
-        return new Certificate[] { certificate };
+        return getChain();
     }
 
     /**
@@ -632,6 +680,24 @@ public class Credential {
                     "subjectAltNames must be of format: DNS:www.example.com, IP:1.2.3.4, URI:https://www.example.com");
         }
 
-        return GeneralNames.getInstance(new DERSequence(altNames.toArray(new GeneralName[] {})));
+        return GeneralNames.getInstance(new DERSequence(altNames.toArray(new GeneralName[0])));
+    }
+
+    // Returns certificate and issuing chain certificates up to but not including root CA.
+    private Certificate[] getChain() {
+        List<Certificate> chain = new ArrayList<>();
+
+        // Add the certificate itself.
+        chain.add(certificate);
+
+        // If not CA then add chain certificates as well.
+        if (Boolean.FALSE.equals(isCa)) {
+            Credential parent = issuer;
+            while (parent != null && parent.issuer != null) {
+                chain.add(parent.certificate);
+                parent = parent.issuer;
+            }
+        }
+        return chain.toArray(new Certificate[0]);
     }
 }

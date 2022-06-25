@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -120,17 +121,17 @@ public class TestCredential {
         Credential cred = new Credential().subject("CN=joe");
 
         // Order of the boolean array from:
-        //    boolean[] java.security.cert.X509Certificate.getKeyUsage()
+        // boolean[] java.security.cert.X509Certificate.getKeyUsage()
         //
-        //  digitalSignature        (0),
-        //  nonRepudiation          (1),
-        //  keyEncipherment         (2),
-        //  dataEncipherment        (3),
-        //  keyAgreement            (4),
-        //  keyCertSign             (5),
-        //  cRLSign                 (6),
-        //  encipherOnly            (7),
-        //  decipherOnly            (8)
+        // digitalSignature (0),
+        // nonRepudiation (1),
+        // keyEncipherment (2),
+        // dataEncipherment (3),
+        // keyAgreement (4),
+        // keyCertSign (5),
+        // cRLSign (6),
+        // encipherOnly (7),
+        // decipherOnly (8)
         assertArrayEquals(new boolean[] { true, false, false, false, false, false, false, false, false },
                 cred.keyUsages(Arrays.asList(KeyUsage.DIGITAL_SIGNATURE)).getX509Certificate().getKeyUsage());
 
@@ -322,6 +323,69 @@ public class TestCredential {
         assertNotEquals(certNoExplicitSerial1.getSerialNumber(), certNoExplicitSerial2.getSerialNumber());
     }
 
+    @Test
+    void testGetCertificatesWithChain() throws Exception {
+        Credential rootCa = new Credential().subject("CN=ca");
+        Credential subCa = new Credential().subject("CN=sub-ca").ca(true).issuer(rootCa);
+        Credential subSubCa = new Credential().subject("CN=sub-sub-ca").ca(true).issuer(subCa);
+        Credential cred = new Credential().subject("CN=end-entity").issuer(subSubCa);
+
+        // Chain contains all sub CAs.
+        Certificate[] chain = cred.getCertificates();
+        assertEquals(3, chain.length);
+        assertEquals(cred.getCertificate(), chain[0]);
+        assertEquals(subSubCa.getCertificate(), chain[1]);
+        assertEquals(subCa.getCertificate(), chain[2]);
+
+        // For CA certificates we do not include chain.
+        chain = subSubCa.getCertificates();
+        assertEquals(1, chain.length);
+        assertEquals(subSubCa.getCertificate(), chain[0]);
+
+        chain = subCa.getCertificates();
+        assertEquals(1, chain.length);
+        assertEquals(subCa.getCertificate(), chain[0]);
+
+        chain = rootCa.getCertificates();
+        assertEquals(1, chain.length);
+        assertEquals(rootCa.getCertificate(), chain[0]);
+    }
+
+    @Test
+    void testGettingPemBundle() throws Exception {
+        Credential rootCa = new Credential().subject("CN=ca");
+        Credential subCa = new Credential().subject("CN=sub-ca").ca(true).issuer(rootCa);
+        Credential subSubCa = new Credential().subject("CN=sub-sub-ca").ca(true).issuer(subCa);
+        Credential cred = new Credential().subject("CN=end-entity").issuer(subSubCa);
+
+        try (BufferedReader reader = new BufferedReader(new StringReader(cred.getCertificatesAsPem()));
+                PEMParser parser = new PEMParser(reader)) {
+            expectPemBlock(parser, "CN=end-entity");
+            expectPemBlock(parser, "CN=sub-sub-ca");
+            expectPemBlock(parser, "CN=sub-ca");
+            assertNull(parser.readPemObject());
+        }
+    }
+
+    @Test
+    void testWritingPemBundle(@TempDir Path tempDir) throws Exception {
+        Path endEntityPath = tempDir.resolve("end-entity.pem");
+
+        Credential rootCa = new Credential().subject("CN=ca");
+        Credential subCa = new Credential().subject("CN=sub-ca").ca(true).issuer(rootCa);
+        Credential subSubCa = new Credential().subject("CN=sub-sub-ca").ca(true).issuer(subCa);
+        Credential cred = new Credential().subject("CN=end-entity").issuer(subSubCa);
+
+        cred.writeCertificatesAsPem(endEntityPath);
+
+        try (BufferedReader reader = Files.newBufferedReader(endEntityPath);
+                PEMParser parser = new PEMParser(reader)) {
+            expectPemBlock(parser, "CN=end-entity");
+            expectPemBlock(parser, "CN=sub-sub-ca");
+            expectPemBlock(parser, "CN=sub-ca");
+            assertNull(parser.readPemObject());
+        }
+    }
 
     // Helper methods.
 
@@ -345,27 +409,35 @@ public class TestCredential {
         }
     }
 
-    // Check if reader yields certificate in PEM format and it has given subject name.
+    // Check if reader yields certificate in PEM format and it has given subject
+    // name.
     void expectPemCertificate(BufferedReader reader, String expectedDn) throws CertificateException, IOException {
+        try (PEMParser parser = new PEMParser(reader)) {
+            expectPemBlock(parser, expectedDn);
+        }
+    }
+
+    // Read one object from PEM bundle, check it is certificate in PEM format and it
+    // has given subject name.
+    void expectPemBlock(PEMParser parser, String expectedDn) throws CertificateException, IOException {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
-        PEMParser parser = new PEMParser(reader);
         PemObject obj = parser.readPemObject();
-        parser.close();
         assertEquals("CERTIFICATE", obj.getType());
         X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(obj.getContent()));
         assertEquals(expectedDn, cert.getSubjectX500Principal().toString());
+
     }
 
     // Check if reader yields private key in PEM format and it is of given type.
     void expectPemPrivateKey(BufferedReader reader, String expectedKeyType)
             throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-        PEMParser parser = new PEMParser(reader);
-        PemObject obj = parser.readPemObject();
-        parser.close();
-        assertEquals("PRIVATE KEY", obj.getType());
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(obj.getContent());
-        // Will throw if key is not right type.
-        KeyFactory.getInstance(expectedKeyType).generatePrivate(spec);
+        try (PEMParser parser = new PEMParser(reader)) {
+            PemObject obj = parser.readPemObject();
+            assertEquals("PRIVATE KEY", obj.getType());
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(obj.getContent());
+            // Will throw if key is not right type.
+            KeyFactory.getInstance(expectedKeyType).generatePrivate(spec);
+        }
     }
 }
