@@ -1,6 +1,7 @@
 # Certy
 
 ![](https://github.com/tsaarni/java-certy/workflows/unit-tests/badge.svg)
+[![Maven Central](https://img.shields.io/maven-central/v/fi.protonode/certy)](https://search.maven.org/search?q=g:fi.protonode%20AND%20a:certy)
 
 ## Description
 
