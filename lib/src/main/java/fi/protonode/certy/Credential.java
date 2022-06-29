@@ -415,9 +415,7 @@ public class Credential {
     }
 
     /**
-     * Returns PEM bundle containing X509 certificate and its chain.
-     * If the credential is end-entity (CA:false) then also chain certificates
-     * up to (but not including) root CA are returned in the bundle.
+     * Returns PEM bundle containing X509 certificate and its chain (if any).
      *
      * @return String containing PEM bundle.
      */
@@ -475,9 +473,7 @@ public class Credential {
     }
 
     /**
-     * Writes PEM bundle containing X509 certificate and its chain.
-     * If the credential is end-entity (CA:false) then also chain certificates
-     * up to (but not including) root CA are written in the bundle.
+     * Writes PEM bundle containing X509 certificate and its chain (if any).
      *
      * @param out Path to write the PEM file to.
      * @return The Credential itself.
@@ -530,10 +526,9 @@ public class Credential {
     }
 
     /**
-     * Returns certificate(s).
-     * If the credential is end-entity (CA:false) then also chain certificates up to (but not including) root CA are returned.
+     * Returns certificate and its chain (if any).
      *
-     * @return Array of certificates. Always holds just single certificate.
+     * @return Array of certificates.
      */
     public Certificate[] getCertificates()
             throws CertificateException, NoSuchAlgorithmException {
@@ -690,14 +685,13 @@ public class Credential {
         // Add the certificate itself.
         chain.add(certificate);
 
-        // If not CA then add chain certificates as well.
-        if (Boolean.FALSE.equals(isCa)) {
-            Credential parent = issuer;
-            while (parent != null && parent.issuer != null) {
-                chain.add(parent.certificate);
-                parent = parent.issuer;
-            }
+        // Add chain.
+        Credential parent = issuer;
+        while (parent != null && parent.issuer != null) {
+            chain.add(parent.certificate);
+            parent = parent.issuer;
         }
+
         return chain.toArray(new Certificate[0]);
     }
 }

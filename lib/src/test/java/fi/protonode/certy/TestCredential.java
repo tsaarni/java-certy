@@ -330,17 +330,17 @@ public class TestCredential {
         Credential subSubCa = new Credential().subject("CN=sub-sub-ca").ca(true).issuer(subCa);
         Credential cred = new Credential().subject("CN=end-entity").issuer(subSubCa);
 
-        // Chain contains all sub CAs.
+        // Chain contains all sub CAs but not the root CA.
         Certificate[] chain = cred.getCertificates();
         assertEquals(3, chain.length);
         assertEquals(cred.getCertificate(), chain[0]);
         assertEquals(subSubCa.getCertificate(), chain[1]);
         assertEquals(subCa.getCertificate(), chain[2]);
 
-        // For CA certificates we do not include chain.
         chain = subSubCa.getCertificates();
-        assertEquals(1, chain.length);
+        assertEquals(2, chain.length);
         assertEquals(subSubCa.getCertificate(), chain[0]);
+        assertEquals(subCa.getCertificate(), chain[1]);
 
         chain = subCa.getCertificates();
         assertEquals(1, chain.length);
