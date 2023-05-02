@@ -11,7 +11,7 @@ repositories {
 
 dependencies {
     implementation 'org.bouncycastle:bcpkix-jdk18on:1.73'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
 }
 
 tasks.named('test') {
