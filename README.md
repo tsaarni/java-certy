@@ -8,7 +8,7 @@
 Certy is a simple to use Java API for creating X509 certificates on demand when running unit tests.
 No more storing test certificates and private keys in the repository!
 
-Certy is Java version of similar tool for command line and Golang: [certyaml](https://github.com/tsaarni/certyaml).
+Java-certy is a version of similar tool for command line and Golang called [certyaml](https://github.com/tsaarni/certyaml), and [python-certy](https://github.com/tsaarni/python-certy) for Python.
 
 ## Documentation
 
