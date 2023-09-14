@@ -45,6 +45,9 @@ import java.util.stream.Collectors;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.CRLDistPoint;
+import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -118,7 +121,7 @@ public class Credential {
     }
 
     // Attributes set by user via builder methods.
-    private X500Name subject;
+    protected X500Name subject;
     private GeneralNames subjectAltNames;
     private KeyType keyType;
     private int keySize;
@@ -127,13 +130,14 @@ public class Credential {
     private Date notAfter;
     private List<KeyUsage> keyUsages;
     private List<ExtKeyUsage> extKeyUsages;
-    private Credential issuer;
+    protected Credential issuer;
     private Boolean isCa;
-    private BigInteger serial;
+    protected BigInteger serial;
+    private String crlDistributionPointUri;
 
     // Generated attributes.
-    private KeyPair keyPair;
-    private Certificate certificate;
+    protected KeyPair keyPair;
+    protected Certificate certificate;
 
     /**
      * Creates new credential builder.
@@ -310,6 +314,17 @@ public class Credential {
     }
 
     /**
+     * Defines URI for CRL distribution point extension.
+     *
+     * @param val URI for CRL distribution point.
+     * @return The Credential itself.
+     */
+    public Credential crlDistributionPointUri(String val) {
+        this.crlDistributionPointUri = val;
+        return this;
+    }
+
+    /**
      * (Re)generate certificate and private key with currently set values.
      *
      * @return The Credential itself.
@@ -385,6 +400,13 @@ public class Credential {
             if (!extKeyUsages.isEmpty()) {
                 builder.addExtension(Extension.extendedKeyUsage, false, new ExtendedKeyUsage(
                         extKeyUsages.stream().map(ExtKeyUsage::getValue).toArray(KeyPurposeId[]::new)));
+            }
+
+            if (crlDistributionPointUri != null) {
+                DistributionPointName dp = new DistributionPointName(new GeneralNames(new GeneralName(
+                        GeneralName.uniformResourceIdentifier, crlDistributionPointUri)));
+                builder.addExtension(Extension.cRLDistributionPoints, false, new CRLDistPoint(
+                        new DistributionPoint[] { new DistributionPoint(dp, null, null) }));
             }
 
             certificate = new JcaX509CertificateConverter().setProvider(new BouncyCastleProvider())
@@ -561,7 +583,7 @@ public class Credential {
 
 
     // Generates certificate and key pair unless they have been already generated.
-    private void ensureGenerated()
+    protected void ensureGenerated()
             throws CertificateException, NoSuchAlgorithmException {
         if (certificate == null || keyPair == null) {
             generate();
@@ -618,7 +640,7 @@ public class Credential {
     }
 
     // Return preferred signature algorithm for given key.
-    private static String signatureAlgorithm(PublicKey pub) {
+    protected static String signatureAlgorithm(PublicKey pub) {
         switch (pub.getAlgorithm()) {
             case "EC":
                 EllipticCurve curve = ((ECPublicKey) pub).getParams().getCurve();

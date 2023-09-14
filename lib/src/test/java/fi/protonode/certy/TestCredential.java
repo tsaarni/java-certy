@@ -15,8 +15,15 @@
  */
 package fi.protonode.certy;
 
+import org.bouncycastle.asn1.x509.CRLDistPoint;
+import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.junit.jupiter.api.Test;
@@ -385,6 +392,24 @@ public class TestCredential {
             expectPemBlock(parser, "CN=sub-ca");
             assertNull(parser.readPemObject());
         }
+    }
+
+    @Test
+    void testCrlDistributionPointUri() throws Exception {
+        X509CertificateHolder c = new X509CertificateHolder(new Credential().subject("CN=joe")
+                .crlDistributionPointUri("http://example.com/crl.pem").getCertificate().getEncoded());
+        Extension crlExtension = c.getExtension(Extension.cRLDistributionPoints);
+        assertNotNull(crlExtension);
+        DistributionPoint[] dps = CRLDistPoint.getInstance(crlExtension.getParsedValue()).getDistributionPoints();
+        assertNotNull(dps);
+
+        DistributionPointName expected = new DistributionPointName(
+            new GeneralNames(
+                new GeneralName(GeneralName.uniformResourceIdentifier, "http://example.com/crl.pem")
+            )
+        );
+
+        assertArrayEquals(new DistributionPoint[] { new DistributionPoint(expected, null, null) }, dps);
     }
 
     // Helper methods.
