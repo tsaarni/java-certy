@@ -5,6 +5,8 @@ plugins {
     id 'signing'
 }
 
+archivesBaseName = 'certy'
+
 repositories {
     mavenCentral()
 }
