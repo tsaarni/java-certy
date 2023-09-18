@@ -76,6 +76,7 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">CertificateRevocationList</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
+<div class="block">CertificateRevocationList is a builder for X.509 CRLs.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -203,6 +204,7 @@ loadScripts(document, 'script');</script>
 <h3>issuer</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="CertificateRevocationList.html" title="class in fi.protonode.certy">CertificateRevocationList</a></span>&nbsp;<span class="element-name">issuer</span><wbr><span class="parameters">(<a href="Credential.html" title="class in fi.protonode.certy">Credential</a>&nbsp;val)</span></div>
 <div class="block">Defines the issuer of the CRL.
+ Issuer will be used to sign the CRL.
  If the issuer is not set, the issuer of the revoked certificates is used.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -216,7 +218,8 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="add(fi.protonode.certy.Credential)">
 <h3>add</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="CertificateRevocationList.html" title="class in fi.protonode.certy">CertificateRevocationList</a></span>&nbsp;<span class="element-name">add</span><wbr><span class="parameters">(<a href="Credential.html" title="class in fi.protonode.certy">Credential</a>&nbsp;val)</span></div>
-<div class="block">Adds a revoked certificate to the CRL.</div>
+<div class="block">Adds a revoked certificate to the CRL.
+ Note that all revoked certificates must have the same issuer.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>val</code> - Instance of <a href="Credential.html" title="class in fi.protonode.certy"><code>Credential</code></a> that will be revoked.</dd>
