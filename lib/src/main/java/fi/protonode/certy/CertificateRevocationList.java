@@ -36,6 +36,10 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
+
+/**
+ * CertificateRevocationList is a builder for X.509 CRLs.
+ */
 public class CertificateRevocationList {
 
     // Attributes set by user via builder methods.
@@ -75,6 +79,7 @@ public class CertificateRevocationList {
 
     /**
      * Defines the issuer of the CRL.
+     * Issuer will be used to sign the CRL.
      * If the issuer is not set, the issuer of the revoked certificates is used.
      *
      * @param val Instance of {@link Credential} that will be used to sign the CRL.
@@ -87,6 +92,7 @@ public class CertificateRevocationList {
 
     /**
      * Adds a revoked certificate to the CRL.
+     * Note that all revoked certificates must have the same issuer.
      *
      * @param val Instance of {@link Credential} that will be revoked.
      * @return The CertificateRevocationList itself.
