@@ -127,4 +127,16 @@ public class TestCertificateRevocationList {
         assertFalse(got.isRevoked(notRevokedCert.getCertificate()));
     }
 
+    @Test
+    public void testUninitializedCaCertificate(@TempDir Path tempDir) throws Exception {
+        Credential uninitialized = new Credential().subject("cn=ca"); // We have not called generate() yet.
+        assertDoesNotThrow(() -> new CertificateRevocationList().issuer(uninitialized).writeAsPem(tempDir.resolve("crl.pem")));
+    }
+
+    @Test
+    public void testUninitializedRevokedCertificate(@TempDir Path tempDir) throws Exception {
+        Credential uninitialized = new Credential().issuer(ca).subject("cn=uninitialized");  // We have not called generate() yet.
+        assertDoesNotThrow(() -> new CertificateRevocationList().issuer(ca).add(uninitialized).writeAsPem(tempDir.resolve("crl.pem")));
+    }
+
 }

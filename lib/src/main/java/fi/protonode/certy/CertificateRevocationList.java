@@ -145,10 +145,14 @@ public class CertificateRevocationList {
     private X509CRLHolder generateCrl() throws CertificateException, NoSuchAlgorithmException {
         if (this.issuer == null) {
             if (this.revoked.isEmpty()) {
-                throw new IllegalArgumentException("issuer not known: either set issuer or add certificates to the CRL");
+                throw new IllegalArgumentException(
+                        "issuer not known: either set issuer or add certificates to the CRL");
             }
             this.issuer = this.revoked.get(0).issuer;
         }
+
+        // Ensure that the issuer has a key pair.
+        this.issuer.ensureGenerated();
 
         Date effectiveRevocationTime = new Date();
         if (this.thisUpdate != null) {
