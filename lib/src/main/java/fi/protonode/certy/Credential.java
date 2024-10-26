@@ -571,6 +571,17 @@ public class Credential {
     }
 
     /**
+     * Returns certificate and its chain (if any).
+     *
+     * @return Array of certificates as {@code X509Certificate}.
+     */
+    public X509Certificate[] getX509Certificates() throws CertificateException, NoSuchAlgorithmException {
+        ensureGenerated();
+
+        return Arrays.stream(getChain()).map(c -> (X509Certificate) c).toArray(X509Certificate[]::new);
+    }
+
+    /**
      * Returns private key.
      *
      * @return Private key.
