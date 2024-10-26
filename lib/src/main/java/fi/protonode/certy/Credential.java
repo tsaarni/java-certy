@@ -73,7 +73,8 @@ public class Credential {
     /** Key type values for {@link #keyType}. */
     public enum KeyType {
         EC,
-        RSA
+        RSA,
+        ED25519
     }
 
     /** Key usage values for {@link #keyUsages}. */
@@ -201,9 +202,12 @@ public class Credential {
 
     /**
      * Defines the key length in bits.
-     * Default value is 256 (EC) or 2048 (RSA) if keySize is not set.<p>
-     * Examples: For keyType EC: 256, 384, 521.
-     *           For keyType RSA: 1024, 2048, 4096.
+     * Default value is 256 (EC) or 2048 (RSA) if keySize is not set.
+     * <p>
+     * Examples:
+     * For keyType EC: 256, 384, 521.
+     * For keyType RSA: 1024, 2048, 4096.
+     * For keyType ED25519: 255.
      *
      * @param val Key size.
      * @return The Credential itself.
@@ -612,6 +616,8 @@ public class Credential {
                 keySize = 256;
             } else if (keyType == KeyType.RSA) {
                 keySize = 2048;
+            } else if (keyType == KeyType.ED25519) {
+                keySize = 255;
             }
         }
 
@@ -668,6 +674,8 @@ public class Credential {
                 }
             case "RSA":
                 return "SHA256WithRSAEncryption";
+            case "EdDSA":
+                return "Ed25519";
             default:
                 throw new UnsupportedOperationException("unsupported private key algorithm: " + pub.getAlgorithm());
         }

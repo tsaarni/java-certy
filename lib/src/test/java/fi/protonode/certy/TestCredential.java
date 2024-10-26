@@ -50,6 +50,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.EdECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
@@ -113,6 +114,16 @@ public class TestCredential {
         expectKey(cred.getX509Certificate(), "RSA", 2048);
         cred.keySize(4096).generate();
         expectKey(cred.getX509Certificate(), "RSA", 4096);
+    }
+
+    @Test
+    void testEd25519Certificate() throws Exception {
+        Credential cred = new Credential().subject("CN=joe")
+                .keyType(KeyType.ED25519);
+        X509Certificate cert = cred.getX509Certificate();
+        assertNotNull(cert);
+        EdECPublicKey key = (EdECPublicKey) cert.getPublicKey();
+        assertEquals("Ed25519", key.getAlgorithm());
     }
 
     @Test
@@ -256,6 +267,9 @@ public class TestCredential {
 
         Credential cred2 = new Credential().subject("CN=joe").keyType(KeyType.RSA).keySize(1);
         assertThrows(IllegalArgumentException.class, () -> cred2.getX509Certificate());
+
+        Credential cred3 = new Credential().subject("CN=joe").keyType(KeyType.ED25519).keySize(1);
+        assertThrows(IllegalArgumentException.class, () -> cred3.getX509Certificate());
     }
 
     @Test
