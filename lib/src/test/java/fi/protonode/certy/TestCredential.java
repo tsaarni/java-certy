@@ -356,6 +356,12 @@ public class TestCredential {
         chain = rootCa.getCertificates();
         assertEquals(1, chain.length);
         assertEquals(rootCa.getCertificate(), chain[0]);
+
+        X509Certificate[] x509chain = cred.getX509Certificates();
+        assertEquals(3, x509chain.length);
+        assertEquals(cred.getX509Certificate(), x509chain[0]);
+        assertEquals(subSubCa.getX509Certificate(), x509chain[1]);
+        assertEquals(subCa.getX509Certificate(), x509chain[2]);
     }
 
     @Test
