@@ -13,6 +13,7 @@ Java-certy is a version of similar tool for command line and Golang called [cert
 ## Documentation
 
 Read the latest documentation [here](https://tsaarni.github.io/java-certy/).
+For the latest releases, visit [Maven Central](https://central.sonatype.com/artifact/fi.protonode/certy).
 
 ## Example
 
