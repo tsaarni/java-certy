@@ -29,9 +29,10 @@ java {
     withSourcesJar()
 }
 
-// Compatibility with JDK8.
+// Compatibility with JDK15.
+// - Ed25519 was added in JDK15.
 compileJava {
-    options.release = 8
+    options.release = 15
 }
 
 publishing {
