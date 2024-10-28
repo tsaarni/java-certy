@@ -52,7 +52,7 @@ public class TestCertificateRevocationList {
     }
 
     @Test
-    public void testAdd() throws Exception {
+    void testAdd() throws Exception {
         Credential anotherRevokedCert = new Credential().issuer(ca).subject("CN=revoked");
         CertificateRevocationList crl = new CertificateRevocationList().add(revokedCert).add(anotherRevokedCert);
         assertNotNull(crl);
@@ -65,7 +65,7 @@ public class TestCertificateRevocationList {
     }
 
     @Test
-    public void testThisUpdate() throws Exception {
+    void testThisUpdate() throws Exception {
         Date thisUpdate = Date.from(Instant.parse("2023-01-01T09:00:00Z"));
         CertificateRevocationList crl = new CertificateRevocationList().thisUpdate(thisUpdate).add(revokedCert);
         assertNotNull(crl);
@@ -76,7 +76,7 @@ public class TestCertificateRevocationList {
     }
 
     @Test
-    public void testNextUpdate() throws Exception {
+    void testNextUpdate() throws Exception {
         Date nextUpdate = Date.from(Instant.parse("2100-01-01T09:00:00Z"));
         CertificateRevocationList crl = new CertificateRevocationList().nextUpdate(nextUpdate).add(revokedCert);
         assertNotNull(crl);
@@ -87,7 +87,7 @@ public class TestCertificateRevocationList {
     }
 
     @Test
-    public void testIssuer() throws Exception {
+    void testIssuer() throws Exception {
         CertificateRevocationList crl = new CertificateRevocationList().issuer(ca).add(revokedCert);
         assertNotNull(crl);
 
@@ -98,7 +98,7 @@ public class TestCertificateRevocationList {
     }
 
     @Test
-    public void testGetPem() throws Exception {
+    void testGetPem() throws Exception {
         CertificateRevocationList crl = new CertificateRevocationList().add(revokedCert);
         assertNotNull(crl);
 
@@ -115,7 +115,7 @@ public class TestCertificateRevocationList {
     }
 
     @Test
-    public void testWritingPem(@TempDir Path tempDir) throws Exception {
+    void testWritingPem(@TempDir Path tempDir) throws Exception {
         Path crlPath = tempDir.resolve("crl.pem");
 
         CertificateRevocationList crl = new CertificateRevocationList().add(revokedCert).writeAsPem(crlPath);
@@ -128,13 +128,13 @@ public class TestCertificateRevocationList {
     }
 
     @Test
-    public void testUninitializedCaCertificate(@TempDir Path tempDir) throws Exception {
+    void testUninitializedCaCertificate(@TempDir Path tempDir) {
         Credential uninitialized = new Credential().subject("cn=ca"); // We have not called generate() yet.
         assertDoesNotThrow(() -> new CertificateRevocationList().issuer(uninitialized).writeAsPem(tempDir.resolve("crl.pem")));
     }
 
     @Test
-    public void testUninitializedRevokedCertificate(@TempDir Path tempDir) throws Exception {
+    void testUninitializedRevokedCertificate(@TempDir Path tempDir) {
         Credential uninitialized = new Credential().issuer(ca).subject("cn=uninitialized");  // We have not called generate() yet.
         assertDoesNotThrow(() -> new CertificateRevocationList().issuer(ca).add(uninitialized).writeAsPem(tempDir.resolve("crl.pem")));
     }

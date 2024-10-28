@@ -22,7 +22,6 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -61,7 +60,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Date;
 
-public class TestCredential {
+class TestCredential {
 
     @Test
     void testSubjectName() throws Exception {
@@ -77,7 +76,7 @@ public class TestCredential {
                 .getX509Certificate();
         assertNotNull(cert);
         assertEquals("CN=joe", cert.getSubjectX500Principal().getName());
-        Object expected[] = new Object[] {
+        Object[] expected = new Object[] {
                 Arrays.asList(GeneralName.dNSName, "host.example.com"),
                 Arrays.asList(GeneralName.uniformResourceIdentifier, "http://www.example.com"),
                 Arrays.asList(GeneralName.iPAddress, "1.2.3.4") };
@@ -239,20 +238,20 @@ public class TestCredential {
     }
 
     @Test
-    void testInvalidSubject() throws Exception {
+    void testInvalidSubject() {
         Credential cred = new Credential();
         assertThrows(IllegalArgumentException.class, () -> cred.subject("Foo=Bar"));
     }
 
     @Test
-    void testEmptySubjectAndSubjectAltNames() throws Exception {
+    void testEmptySubjectAndSubjectAltNames() {
         // Both subject and subject alternative name cannot be empty.
         Credential cred = new Credential();
         assertThrows(IllegalArgumentException.class, () -> cred.getX509Certificate());
     }
 
     @Test
-    void testInvalidSubjectAltName() throws Exception {
+    void testInvalidSubjectAltName() {
         Credential cred = new Credential().subject("CN=joe");
         assertThrows(IllegalArgumentException.class, () -> cred.subjectAltName("EMAIL:user@example.com"));
         assertThrows(IllegalArgumentException.class, () -> cred.subjectAltName("URL:"));
@@ -261,7 +260,7 @@ public class TestCredential {
     }
 
     @Test
-    void testInvalidKeySize() throws Exception {
+    void testInvalidKeySize() {
         Credential cred1 = new Credential().subject("CN=joe").keyType(KeyType.EC).keySize(1);
         assertThrows(IllegalArgumentException.class, () -> cred1.getX509Certificate());
 
