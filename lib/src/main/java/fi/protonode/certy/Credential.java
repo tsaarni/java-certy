@@ -72,8 +72,17 @@ public class Credential {
 
     /** Key type values for {@link #keyType}. */
     public enum KeyType {
+        /**
+         * EC key type.
+         */
         EC,
+        /**
+         * RSA key type.
+         */
         RSA,
+        /**
+         * Ed25519 key type. Ed25519 is supported in JDK 15 and later.
+         */
         ED25519
     }
 
