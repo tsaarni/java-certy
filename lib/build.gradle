@@ -33,7 +33,23 @@ java {
 }
 
 compileJava {
-    options.release = 8
+    // Release option was added in JDK 9.
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.release = 8
+    } else {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+}
+
+sourceSets {
+    test {
+        java {
+            if (JavaVersion.current() < JavaVersion.VERSION_15) {
+                exclude '**/TestCredentialJdk15.java'
+            }
+        }
+    }
 }
 
 publishing {
