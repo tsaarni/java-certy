@@ -398,9 +398,12 @@ public class Credential {
                     keyPair.getPublic());
 
             JcaX509ExtensionUtils utils = new JcaX509ExtensionUtils();
+            PublicKey akiKey = (issuer != null) ? issuer.keyPair.getPublic() : keyPair.getPublic();
             builder.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCa))
                     .addExtension(Extension.subjectKeyIdentifier, false,
                             utils.createSubjectKeyIdentifier(keyPair.getPublic()))
+                    .addExtension(Extension.authorityKeyIdentifier, false,
+                            utils.createAuthorityKeyIdentifier(akiKey))
                     .addExtension(Extension.keyUsage, true, new org.bouncycastle.asn1.x509.KeyUsage(
                             keyUsages.stream().collect(Collectors.summingInt(KeyUsage::getValue))));
 
